@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css"> <!-- link to the external CSS file -->
+</head>
+<body>
+  <div class="form-container"> <!-- Dashboard heading container -->
+    <h2>Welcome to your Dashboard</h2>
+
+    <p>Your current streak: <strong id="streakCount">0</strong> days</p>
+
+    <form action="/mark" method="POST"> <!-- Form to mark today's habit -->
+      <label>Select a category:</label>
+      <select name="category" required>
+        <option value="Gym">Gym</option>
+        <option value="Study">Study</option>
+      </select>
+
+      <br><br>
+
+      <label>Add custom category (optional):</label>
+<input type="text" name="customCategory" placeholder="e.g. Reading" />
+<button type="submit">Add</button>
+
+
+      <br><br>
+      <button type="submit"> Mark as Done for Today</button>
+    </form>
+
+    <form action="/logout" method="GET">
+  <button type="submit"> < Logout </button>
+</form>
+
+  </div>
+</body>
+</html>
