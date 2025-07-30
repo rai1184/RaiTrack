@@ -6,6 +6,7 @@ const User = require('./models/user'); // Imports the User model from models/use
 const bcrypt = require('bcrypt'); // Import bcrypt library for hashing password securely
 const session = require('express-session'); //imports the express-session middleware, which lets my server remember a user after they log in.
 require('dotenv').config();
+const Streak  = require('./models/streak');
 
 
 // Allows the server to read data sent from HTML forms
@@ -103,6 +104,63 @@ app.get('/dashboard', (req, res) => {
   }
   res.sendFile(path.join(__dirname, '..', 'dashboard.html'));
 });
+
+//This defines a POST route that will be triggered when the user tries to mark a streak
+app.post('/mark', async (req, res) => {
+  // Checks if the user is logged in using express-session.
+  if(!req.session.userId) {
+    return res.status(401).send('You must be logged in.');
+  }
+
+  const userId = req.session.userId; // Gets the currently logged-in user's ID from the session.
+  const category = req.body.customCategory || req.body.category;  // rabs the streak category the user wants to mark.Could be a predefined category or a custom one.
+  
+  // normalized today's date
+  const today = new date();
+  today.setHours(0,0,0,0);
+
+  // now the logic
+  try {
+    let streak = await Streak.findOne({userId, category}); //Tries to find if a streak already exists for this user and this category
+    
+    if(!streak) { // if no streak found
+      streak = new Streak({
+      userId,
+      category,
+      streakCount: 1,
+      lastMarkedDate: today,
+      }); }
+      else {  // if there is a previous streak
+          
+        // Normalize the saved date from the last time the streak was marked.
+        const lastDate = new Date(streak.lastMarkedDate);
+        lastDate.setHours(0, 0, 0, 0);
+        // calculate how many days have passed since the last mark
+        const diffTime = today.getTime() - lastDate.getTime();
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+        if (diffDays === 1) {
+        // Marked yesterday → increment streak
+        streak.streakCount += 1;
+        streak.lastMarkedDate = today;
+      } else if (diffDays > 1) {
+        // Missed a day → reset
+        streak.streakCount = 1;
+        streak.lastMarkedDate = today;
+      } else {
+        // Already marked today → no change
+        return res.send('Already marked for today!');
+      }
+    }
+
+    await streak.save();
+    res.send('Marked successfully!');
+  } catch (err) {
+    console.error('Error marking streak:', err);
+    res.status(500).send('Something went wrong.');
+  }
+});
+
 
 // Start the server
 app.listen(PORT, () => {

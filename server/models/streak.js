@@ -9,7 +9,7 @@ const streakSchema = new mongoose.Schema({
     },
 
     category: {
-        type: string,   // e.g., "Gym", "Study", or any custom input
+        type: String,   // e.g., "Gym", "Study", or any custom input
         required: true,
     },
 
